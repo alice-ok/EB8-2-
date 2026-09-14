@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeux — Les défenses de l'organisme — EB8</title>
+<style>
+:root{
+  --bleu-fonce:#123C69;
+  --bleu:#1D5B8F;
+  --bleu-clair:#E8F1F8;
+  --vert:#2E9E5B;
+  --vert-clair:#E4F7EC;
+  --rouge:#C0392B;
+  --rouge-clair:#FBE6E3;
+  --orange:#DE7E0D;
+  --gris:#4A5568;
+  --blanc:#FFFFFF;
+  --ombre:0 4px 14px rgba(18,60,105,0.15);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:"Segoe UI", Verdana, Arial, sans-serif;
+  background:linear-gradient(180deg,#EAF3FB 0%, #F7FBFF 100%);
+  color:var(--gris);
+  line-height:1.5;
+  min-height:100vh;
+}
+header.top{
+  background:var(--bleu-fonce);
+  color:var(--blanc);
+  padding:18px 20px;
+  text-align:center;
+  box-shadow:var(--ombre);
+}
+header.top h1{margin:0;font-size:1.4rem;}
+header.top p{margin:4px 0 0;font-size:0.95rem;opacity:0.9;}
+
+nav.gameNav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  padding:14px 10px;
+  background:var(--blanc);
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+nav.gameNav button{
+  border:2px solid var(--bleu);
+  background:var(--blanc);
+  color:var(--bleu);
+  padding:9px 18px;
+  border-radius:22px;
+  font-size:0.9rem;
+  cursor:pointer;
+  font-weight:700;
+}
+nav.gameNav button.active{background:var(--bleu-fonce);color:var(--blanc);border-color:var(--bleu-fonce);}
+nav.gameNav button:hover{outline:3px solid var(--orange);outline-offset:1px;}
+
+main{max-width:1000px;margin:0 auto;padding:24px 16px 60px;}
+.panel{display:none;}
+.panel.active{display:block;animation:fadein .3s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.intro-card{
+  background:var(--blanc);
+  border-radius:14px;
+  box-shadow:var(--ombre);
+  padding:20px 22px;
+  margin-bottom:20px;
+}
+.intro-card h2{color:var(--bleu-fonce);margin-top:0;}
+.badge{
+  display:inline-block;
+  background:var(--bleu);
+  color:var(--blanc);
+  font-size:0.75rem;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:12px;
+  margin-bottom:10px;
+  letter-spacing:.5px;
+}
+.badge.orange{background:var(--orange);}
+.badge.green{background:var(--vert);}
+
+/* ---------- ROULETTE ---------- */
+.game-area{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;justify-content:center;}
+.wheel-col{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.wheel-wrap{position:relative;width:min(380px, 86vw);height:min(380px, 86vw);}
+.pointer{
+  position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;
+  border-top:28px solid var(--bleu-fonce);z-index:5;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+svg.wheel{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 16px rgba(18,60,105,0.25));transition:transform 3.6s cubic-bezier(0.15,0.65,0.15,1);}
+.hub{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:58px;height:58px;background:var(--bleu-fonce);border-radius:50%;
+  border:4px solid var(--blanc);z-index:4;display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+}
+.big-btn{
+  background:var(--bleu);color:var(--blanc);border:none;padding:14px 32px;border-radius:30px;
+  font-size:1.05rem;font-weight:700;cursor:pointer;box-shadow:var(--ombre);transition:background .2s ease, transform .1s ease;
+}
+.big-btn:hover:not(:disabled){background:var(--bleu-fonce);}
+.big-btn:active:not(:disabled){transform:scale(0.97);}
+.big-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.progress-line{font-weight:700;color:var(--bleu-fonce);font-size:0.95rem;}
+.score-line{font-weight:700;color:var(--vert);font-size:0.95rem;}
+
+.question-col{flex:1 1 380px;min-width:300px;}
+.q-card{background:var(--blanc);border-radius:14px;box-shadow:var(--ombre);padding:22px;min-height:320px;display:flex;flex-direction:column;}
+.q-placeholder{margin:auto;text-align:center;color:#9fb2c4;font-size:1rem;}
+.q-number{display:inline-block;background:var(--bleu-clair);color:var(--bleu-fonce);font-weight:700;font-size:0.8rem;padding:3px 10px;border-radius:10px;margin-bottom:10px;}
+.q-text{font-weight:700;color:var(--bleu-fonce);font-size:1.1rem;margin-bottom:16px;}
+.q-options button{
+  display:block;width:100%;text-align:left;padding:12px 16px;margin-bottom:10px;
+  border:2px solid #d7e3ef;border-radius:10px;background:var(--blanc);cursor:pointer;font-size:0.95rem;color:var(--gris);
+}
+.q-options button:hover:not(:disabled){border-color:var(--bleu);}
+.q-options button.correct{background:var(--vert-clair);border-color:var(--vert);color:#1c6e3e;font-weight:700;}
+.q-options button.incorrect{background:var(--rouge-clair);border-color:var(--rouge);color:#8e2c20;font-weight:700;}
+.q-options button:disabled{cursor:default;}
+.q-answer{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--bleu-clair);color:var(--bleu-fonce);font-size:0.92rem;display:none;}
+.q-answer.show{display:block;}
+.q-next{margin-top:16px;align-self:flex-start;}
+
+.finish-card{
+  text-align:center;background:linear-gradient(135deg,var(--bleu-fonce),var(--bleu));color:var(--blanc);
+  padding:40px 20px;border-radius:14px;margin-top:20px;
+}
+.finish-card .big-score{font-size:2.4rem;font-weight:800;margin:8px 0;}
+.finish-card button{
+  margin-top:14px;background:var(--blanc);color:var(--bleu-fonce);border:none;padding:12px 28px;
+  border-radius:24px;font-weight:700;cursor:pointer;font-size:1rem;
+}
+
+/* ---------- TIR A LA CIBLE ---------- */
+.target-wrap{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+.target-visual{flex:0 0 auto;text-align:center;}
+.targets-row{display:flex;gap:18px;justify-content:center;margin-top:16px;flex-wrap:wrap;max-width:520px;}
+.target-btn{
+  width:150px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  background:var(--blanc);
+  border:2px solid #d7e3ef;
+  border-radius:14px;
+  padding:14px 10px;
+  cursor:pointer;
+  box-shadow:var(--ombre);
+  transition:transform .15s ease, border-color .15s ease;
+}
+.target-btn:hover:not(:disabled){transform:scale(1.04);border-color:var(--bleu);}
+.target-btn:disabled{cursor:default;}
+.target-circle{
+  width:66px;height:66px;border-radius:50%;
+  background:radial-gradient(circle, #FBE6E3 0%, #F2B7CE 35%, #C0392B 70%, #7a2016 100%);
+  border:3px solid var(--blanc);
+  box-shadow:0 3px 8px rgba(0,0,0,0.2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--blanc);font-weight:800;font-size:1.1rem;
+  flex-shrink:0;
+}
+.target-btn.hit{border-color:var(--vert);background:var(--vert-clair);}
+.target-btn.hit .target-circle{background:radial-gradient(circle, var(--vert-clair) 0%, var(--vert) 70%);}
+.target-btn.miss{opacity:0.4;}
+.target-label{font-size:0.85rem;color:var(--gris);text-align:center;line-height:1.3;}
+.target-btn.hit .target-label, .target-btn.miss .target-label{color:var(--bleu-fonce);font-weight:600;}
+.dart{font-size:2.4rem;margin-bottom:6px;}
+.target-q-card{flex:1 1 340px;min-width:300px;background:var(--blanc);border-radius:14px;box-shadow:var(--ombre);padding:22px;min-height:260px;}
+
+/* ---------- ESCAPE GAME ---------- */
+.escape-wrap{display:flex;gap:24px;flex-wrap:wrap;}
+.escape-q-card{flex:1 1 360px;min-width:300px;background:var(--blanc);border-radius:14px;box-shadow:var(--ombre);padding:22px;}
+.code-panel{
+  flex:0 0 220px;background:var(--bleu-fonce);color:var(--blanc);border-radius:14px;padding:22px;text-align:center;
+  height:fit-content;
+}
+.code-digits{
+  display:flex;gap:10px;justify-content:center;margin:14px 0;
+}
+.code-digit{
+  width:42px;height:52px;border-radius:8px;background:rgba(255,255,255,0.12);
+  border:2px dashed rgba(255,255,255,0.4);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;
+}
+.code-digit.revealed{background:var(--orange);border:2px solid var(--blanc);}
+.lock-icon{font-size:2.2rem;}
+.vf-item{border:1px solid #d7e3ef;border-radius:10px;padding:14px;margin-bottom:12px;background:#fbfdff;}
+.vf-statement{font-weight:600;margin-bottom:10px;color:var(--bleu-fonce);}
+.vf-buttons{display:flex;gap:10px;}
+.vf-buttons button{flex:1;padding:8px;border-radius:8px;border:2px solid var(--gris);background:var(--blanc);cursor:pointer;font-weight:700;}
+.vf-buttons button.vrai:hover{border-color:var(--vert);color:var(--vert);}
+.vf-buttons button.faux:hover{border-color:var(--rouge);color:var(--rouge);}
+.vf-feedback{margin-top:10px;padding:10px;border-radius:8px;font-size:0.92rem;display:none;}
+.vf-feedback.show{display:block;}
+.vf-feedback.correct{background:var(--vert-clair);color:#1c6e3e;border:1px solid var(--vert);}
+.vf-feedback.incorrect{background:var(--rouge-clair);color:#8e2c20;border:1px solid var(--rouge);}
+.vf-item.done .vf-buttons button{opacity:0.4;pointer-events:none;}
+
+footer.bottom{text-align:center;font-size:0.8rem;color:#8fa3b8;padding:10px;}
+
+@media (max-width:640px){
+  .game-area, .target-wrap, .escape-wrap{flex-direction:column;align-items:center;}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>🎮 Jeux — Les défenses de l'organisme</h1>
+  <p>SVT — Grade 8 (EB8) · Chapitre — Immunologie · Activités complémentaires</p>
+</header>
+
+<nav class="gameNav" id="gameNav">
+  <button data-panel="roulette" class="active">🎡 Roulette</button>
+  <button data-panel="target">🎯 Tir à la cible</button>
+  <button data-panel="escape">🔐 Escape Game</button>
+</nav>
+
+<main>
+
+  <!-- ================= ROULETTE ================= -->
+  <section class="panel active" id="panel-roulette">
+    <div class="intro-card">
+      <span class="badge">RÈGLE DU JEU</span>
+      <h2>Tourne la roue, réponds, avance !</h2>
+      <p>Clique sur <strong>« Tourner la roue »</strong>. La roue s'arrête sur une question. Réponds, puis découvre la bonne réponse. Chaque question ne sort qu'<strong>une seule fois</strong>.</p>
+    </div>
+    <div class="game-area">
+      <div class="wheel-col">
+        <div class="wheel-wrap">
+          <div class="pointer"></div>
+          <svg class="wheel" id="wheelSvg" viewBox="0 0 300 300"></svg>
+          <div class="hub">🛡️</div>
+        </div>
+        <button class="big-btn" id="spinBtn">Tourner la roue 🎯</button>
+        <div class="progress-line" id="progressLine">0 / 10 questions faites</div>
+        <div class="score-line" id="scoreLine">⭐ Score : 0 / 10</div>
+      </div>
+      <div class="question-col">
+        <div class="q-card" id="qCard">
+          <div class="q-placeholder">👉 Tourne la roue pour faire apparaître ta première question !</div>
+        </div>
+      </div>
+    </div>
+    <div id="finishArea"></div>
+  </section>
+
+  <!-- ================= TIR A LA CIBLE ================= -->
+  <section class="panel" id="panel-target">
+    <div class="intro-card">
+      <span class="badge orange">RÈGLE DU JEU</span>
+      <h2>Vise la bonne cible !</h2>
+      <p>Lis la question, puis clique sur la cible qui porte la bonne réponse. Une cible touchée devient verte ✅, les autres restent grisées.</p>
+    </div>
+    <div class="target-wrap">
+      <div class="target-visual">
+        <div class="dart">🏹</div>
+        <div class="targets-row" id="targetsRow"></div>
+      </div>
+      <div class="target-q-card" id="targetQCard">
+        <div class="q-placeholder">Chargement...</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:18px;">
+      <div class="progress-line" id="targetProgress">0 / 4 questions faites</div>
+      <div class="score-line" id="targetScore">⭐ Score : 0 / 4</div>
+    </div>
+    <div id="targetFinishArea"></div>
+  </section>
+
+  <!-- ================= ESCAPE GAME ================= -->
+  <section class="panel" id="panel-escape">
+    <div class="intro-card">
+      <span class="badge green">RÈGLE DU JEU</span>
+      <h2>Déverrouille le coffre-fort !</h2>
+      <p>Chaque bonne réponse dévoile un chiffre du code à 4 chiffres. Réponds aux 4 affirmations (Vrai ou Faux) pour reconstituer le code, puis clique sur « Ouvrir le coffre ».</p>
+    </div>
+    <div class="escape-wrap">
+      <div class="escape-q-card" id="escapeCard"></div>
+      <div class="code-panel">
+        <div class="lock-icon">🔒</div>
+        <div>Code du coffre</div>
+        <div class="code-digits" id="codeDigits"></div>
+        <button class="big-btn" id="unlockBtn" disabled>Ouvrir le coffre</button>
+      </div>
+    </div>
+    <div id="escapeFinishArea"></div>
+  </section>
+
+</main>
+
+<footer class="bottom">Ressource pédagogique interactive — usage en classe et en autonomie.</footer>
+
+<script>
+/* ======================================================
+   Utilitaires communs
+   ====================================================== */
+function beep(freq, duration){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = "sine";
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + duration);
+  }catch(e){}
+}
+
+/* ======================================================
+   Navigation entre les 3 jeux
+   ====================================================== */
+document.getElementById("gameNav").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button[data-panel]");
+  if(!btn) return;
+  document.querySelectorAll("nav.gameNav button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll("main .panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+btn.dataset.panel).classList.add("active");
+});
+
+/* ======================================================
+   JEU 1 — ROULETTE (questions grondées dans le document,
+   distinctes du PPT et de la première activité HTML)
+   ====================================================== */
+const questions = [
+  {q:"Où les bactéries se multiplient-elles principalement lors d'une infection ?",
+   options:["Dans les liquides qui baignent les cellules","Dans l'air ambiant autour du corps","Uniquement dans les os"], correct:0,
+   answer:"Les bactéries se multiplient dans les liquides qui baignent les cellules de l'organisme."},
+  {q:"Que sort-il du capillaire sanguin dilaté lors de la réaction inflammatoire ?",
+   options:["Seulement des globules rouges","Du plasma et des phagocytes","Rien, le capillaire reste fermé"], correct:1,
+   answer:"Le capillaire se dilate et laisse sortir du plasma ainsi que des phagocytes, qui se dirigent vers l'infection."},
+  {q:"Comment appelle-t-on le mécanisme par lequel un phagocyte ingère puis digère une bactérie ?",
+   options:["La contamination","La digestion simple","La phagocytose"], correct:2,
+   answer:"Ce mécanisme complet (adhésion, ingestion, digestion, sécrétion) s'appelle la phagocytose."},
+  {q:"Parmi les barrières naturelles du corps, lesquelles sont directement liées à la peau (transpiration, acidité) ?",
+   options:["Les larmes et la salive","La sueur et l'acidité","La microflore"], correct:1,
+   answer:"La sueur et l'acidité de la peau font partie des barrières naturelles qui protègent le corps."},
+  {q:"Quels types de microbes le document cite-t-il comme étant en permanence au contact de notre organisme ?",
+   options:["Les virus et les bactéries","Seulement les champignons","Seulement les parasites"], correct:0,
+   answer:"Le document précise que des virus et des bactéries sont en permanence au contact de notre organisme."},
+  {q:"Qu'est-ce qui différencie un microbe pathogène des autres microbes ?",
+   options:["Il ne peut jamais se transmettre","Il est toujours visible à l'œil nu","Il provoque une maladie"], correct:2,
+   answer:"Un microbe pathogène est un microbe qui provoque une maladie lorsqu'il pénètre dans le corps."},
+  {q:"Que deviennent les déchets d'une bactérie digérée par un phagocyte ?",
+   options:["Ils sont rejetés hors de la cellule par exocytose","Ils restent dans la vacuole digestive pour toujours","Ils redeviennent une bactérie vivante"], correct:0,
+   answer:"Lors de la sécrétion, les déchets de la digestion sont rejetés hors du phagocyte par exocytose."},
+  {q:"La microflore, citée comme barrière naturelle « écologique », se trouve principalement où ?",
+   options:["Dans les poumons","Dans les yeux","Dans l'intestin"], correct:2,
+   answer:"La microflore, une barrière écologique, se trouve principalement dans l'intestin."},
+  {q:"Quel est le lien entre contamination et multiplication bactérienne ?",
+   options:["La multiplication se produit toujours avant la contamination","Après la contamination, les bactéries peuvent se multiplier et provoquer une infection","La contamination empêche toute multiplication bactérienne"], correct:1,
+   answer:"Après la contamination (pénétration des microbes), ceux-ci peuvent se multiplier dans le corps : c'est l'infection."},
+  {q:"Que protègent les muqueuses et les cils, cités parmi les barrières naturelles ?",
+   options:["Les voies respiratoires","Les muscles","Les os"], correct:0,
+   answer:"Les muqueuses et les cils forment une barrière naturelle qui protège notamment les voies respiratoires."}
+];
+
+const N = questions.length;
+const segColors = ["#F7C9A5","#A7D7C5","#B7C9F2","#F2B7CE","#F6E29A"];
+let remaining = [...Array(N).keys()];
+let cumulativeRotation = 0;
+let score = 0;
+let answeredCount = 0;
+let spinning = false;
+
+const wheelSvg = document.getElementById("wheelSvg");
+const spinBtn = document.getElementById("spinBtn");
+const qCard = document.getElementById("qCard");
+const progressLine = document.getElementById("progressLine");
+const scoreLine = document.getElementById("scoreLine");
+const finishArea = document.getElementById("finishArea");
+
+function polarToXY(cx, cy, r, angleDeg){
+  const rad = (angleDeg - 90) * Math.PI / 180;
+  return { x: cx + r*Math.cos(rad), y: cy + r*Math.sin(rad) };
+}
+
+function drawWheel(){
+  const cx=150, cy=150, r=145;
+  const segAngle = 360/N;
+  let svgContent = "";
+  for(let i=0;i<N;i++){
+    const start = i*segAngle;
+    const end = (i+1)*segAngle;
+    const p1 = polarToXY(cx,cy,r,start);
+    const p2 = polarToXY(cx,cy,r,end);
+    const largeArc = segAngle>180?1:0;
+    const done = !remaining.includes(i);
+    const fill = done ? "#D8DEE6" : segColors[i % segColors.length];
+    const path = `M${cx},${cy} L${p1.x.toFixed(2)},${p1.y.toFixed(2)} A${r},${r} 0 ${largeArc} 1 ${p2.x.toFixed(2)},${p2.y.toFixed(2)} Z`;
+    svgContent += `<path d="${path}" fill="${fill}" stroke="#ffffff" stroke-width="2"/>`;
+    const labelPos = polarToXY(cx,cy,r*0.68,start+segAngle/2);
+    const labelRot = start+segAngle/2;
+    const labelText = done ? "✓" : (i+1);
+    const labelColor = done ? "#7d8a99" : "#123C69";
+    svgContent += `<text x="${labelPos.x.toFixed(2)}" y="${labelPos.y.toFixed(2)}" font-size="20" font-weight="700" fill="${labelColor}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${labelRot.toFixed(2)} ${labelPos.x.toFixed(2)} ${labelPos.y.toFixed(2)})">${labelText}</text>`;
+  }
+  wheelSvg.innerHTML = svgContent;
+}
+
+function updateProgress(){
+  progressLine.textContent = `${answeredCount} / ${N} questions faites`;
+  scoreLine.textContent = `⭐ Score : ${score} / ${N}`;
+}
+
+function spin(){
+  if(spinning || remaining.length===0) return;
+  spinning = true;
+  spinBtn.disabled = true;
+  qCard.innerHTML = `<div class="q-placeholder">🎡 La roue tourne...</div>`;
+
+  const targetIndex = remaining[Math.floor(Math.random()*remaining.length)];
+
+  const segAngle = 360/N;
+  const targetCenter = targetIndex*segAngle + segAngle/2;
+  const desiredMod = ((360 - targetCenter) % 360 + 360) % 360;
+  const currentMod = ((cumulativeRotation % 360) + 360) % 360;
+  let delta = desiredMod - currentMod;
+  if(delta <= 0) delta += 360;
+  const extraSpins = 5;
+  cumulativeRotation += delta + extraSpins*360;
+  wheelSvg.style.transform = `rotate(${cumulativeRotation}deg)`;
+
+  setTimeout(()=>{
+    spinning = false;
+    showQuestion(targetIndex);
+  }, 3700);
+}
+
+function showQuestion(idx){
+  const item = questions[idx];
+  qCard.innerHTML = "";
+  const numEl = document.createElement("div");
+  numEl.className = "q-number";
+  numEl.textContent = "Question " + (idx+1);
+  const qText = document.createElement("div");
+  qText.className = "q-text";
+  qText.textContent = item.q;
+  const optWrap = document.createElement("div");
+  optWrap.className = "q-options";
+  const answerBox = document.createElement("div");
+  answerBox.className = "q-answer";
+
+  item.options.forEach((opt,i)=>{
+    const b = document.createElement("button");
+    b.textContent = opt;
+    b.addEventListener("click", ()=>{
+      const buttons = optWrap.querySelectorAll("button");
+      buttons.forEach((bb,ii)=>{
+        bb.disabled = true;
+        if(ii===item.correct) bb.classList.add("correct");
+        else if(ii===i) bb.classList.add("incorrect");
+      });
+      if(i===item.correct){ score++; beep(880,0.18); }
+      else { beep(220,0.3); }
+      answerBox.textContent = "💡 " + item.answer;
+      answerBox.classList.add("show");
+      answeredCount++;
+      remaining = remaining.filter(r=>r!==idx);
+      updateProgress();
+      drawWheel();
+
+      const nextWrap = document.createElement("div");
+      if(remaining.length>0){
+        const nextBtn = document.createElement("button");
+        nextBtn.className="big-btn q-next";
+        nextBtn.textContent="Tourner à nouveau 🎯";
+        nextBtn.addEventListener("click", ()=>{ spinBtn.disabled=false; spin(); });
+        nextWrap.appendChild(nextBtn);
+      } else {
+        showFinish();
+      }
+      qCard.appendChild(nextWrap);
+      spinBtn.disabled = remaining.length===0;
+    });
+    optWrap.appendChild(b);
+  });
+
+  qCard.appendChild(numEl);
+  qCard.appendChild(qText);
+  qCard.appendChild(optWrap);
+  qCard.appendChild(answerBox);
+}
+
+function showFinish(){
+  spinBtn.disabled = true;
+  const pct = Math.round(score/N*100);
+  let msg;
+  if(score===N) msg = "Parfait ! Tu maîtrises toutes les défenses de l'organisme. 🏆";
+  else if(score >= N/2) msg = "Bon travail ! Relis les réponses manquées pour progresser. 👍";
+  else msg = "Continue à réviser, tu vas y arriver ! 💪";
+
+  finishArea.innerHTML = `
+    <div class="finish-card">
+      <h2>🎉 Toutes les questions sont faites !</h2>
+      <div class="big-score">${score} / ${N} (${pct}%)</div>
+      <p>${msg}</p>
+      <button id="resetBtn">Recommencer la roulette 🔄</button>
+    </div>
+  `;
+  document.getElementById("resetBtn").addEventListener("click", resetGame);
+}
+
+function resetGame(){
+  remaining = [...Array(N).keys()];
+  score = 0;
+  answeredCount = 0;
+  finishArea.innerHTML = "";
+  qCard.innerHTML = `<div class="q-placeholder">👉 Tourne la roue pour faire apparaître ta première question !</div>`;
+  spinBtn.disabled = false;
+  updateProgress();
+  drawWheel();
+}
+
+spinBtn.addEventListener("click", spin);
+drawWheel();
+updateProgress();
+
+/* ======================================================
+   JEU 2 — TIR À LA CIBLE (contenu encore différent :
+   zone de l'infection, grossissement au microscope,
+   fourchette de division bactérienne, tout premier
+   événement de la réaction inflammatoire)
+   ====================================================== */
+const targetQuestions = [
+  {q:"Quel est le rôle de l'étape d'adhésion dans la phagocytose ?",
+   options:["La membrane du phagocyte adhère à la bactérie","Le phagocyte digère la bactérie","Le phagocyte rejette les déchets"], correct:0,
+   answer:"Lors de l'adhésion, la membrane du phagocyte se colle à la bactérie repérée."},
+  {q:"Que se passe-t-il précisément lors de l'étape d'ingestion de la phagocytose ?",
+   options:["Le phagocyte englobe la bactérie dans une vacuole digestive","Le phagocyte adhère seulement à la bactérie","La bactérie est rejetée hors de la cellule"], correct:0,
+   answer:"Pendant l'ingestion, le phagocyte englobe la bactérie et l'enferme dans une vacuole digestive."},
+  {q:"Grâce à quoi la bactérie est-elle digérée lors de l'étape de digestion ?",
+   options:["Des enzymes digestives","Des anticorps","De l'acide gastrique"], correct:0,
+   answer:"La bactérie est digérée grâce à des enzymes digestives contenues dans la vacuole digestive."},
+  {q:"Comment s'appelle le rejet des déchets hors du phagocyte, à la fin de la phagocytose ?",
+   options:["L'ingestion","L'exocytose (la sécrétion)","La contamination"], correct:1,
+   answer:"Ce rejet final des déchets hors de la cellule s'appelle l'exocytose, ou sécrétion."}
+];
+const TN = targetQuestions.length;
+let tRemaining = [...Array(TN).keys()];
+let tScore = 0;
+let tAnswered = 0;
+let tCurrent = null;
+
+const targetsRow = document.getElementById("targetsRow");
+const targetQCard = document.getElementById("targetQCard");
+const targetProgress = document.getElementById("targetProgress");
+const targetScoreEl = document.getElementById("targetScore");
+const targetFinishArea = document.getElementById("targetFinishArea");
+
+function shuffleArr(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function loadTargetQuestion(){
+  if(tRemaining.length===0){ showTargetFinish(); return; }
+  tCurrent = tRemaining[Math.floor(Math.random()*tRemaining.length)];
+  const item = targetQuestions[tCurrent];
+  targetQCard.innerHTML = `<div class="q-number">Question ${tCurrent+1}</div><div class="q-text">${item.q}</div><div class="q-answer" id="targetAnswerBox"></div>`;
+
+  const optionOrder = shuffleArr(item.options.map((opt,i)=>({opt,i})));
+  targetsRow.innerHTML = "";
+  optionOrder.forEach(({opt,i})=>{
+    const btn = document.createElement("button");
+    btn.className = "target-btn";
+    btn.innerHTML = `<span class="target-circle">🎯</span><span class="target-label">${opt}</span>`;
+    btn.addEventListener("click", ()=>{
+      const allBtns = targetsRow.querySelectorAll(".target-btn");
+      allBtns.forEach(b=>b.disabled=true);
+      if(i===item.correct){
+        btn.classList.add("hit");
+        tScore++; beep(880,0.18);
+      } else {
+        btn.classList.add("miss");
+        // reveal correct one too
+        optionOrder.forEach(({opt:o2,i:i2},idx2)=>{
+          if(i2===item.correct) allBtns[idx2].classList.add("hit");
+        });
+        beep(220,0.3);
+      }
+      document.getElementById("targetAnswerBox").textContent = "💡 " + item.answer;
+      document.getElementById("targetAnswerBox").classList.add("show");
+      tAnswered++;
+      tRemaining = tRemaining.filter(r=>r!==tCurrent);
+      targetProgress.textContent = `${tAnswered} / ${TN} questions faites`;
+      targetScoreEl.textContent = `⭐ Score : ${tScore} / ${TN}`;
+
+      const nextWrap = document.createElement("div");
+      nextWrap.style.marginTop = "14px";
+      if(tRemaining.length>0){
+        const nb = document.createElement("button");
+        nb.className = "big-btn";
+        nb.textContent = "Question suivante ▶";
+        nb.addEventListener("click", loadTargetQuestion);
+        nextWrap.appendChild(nb);
+      }
+      targetQCard.appendChild(nextWrap);
+      if(tRemaining.length===0) setTimeout(showTargetFinish, 900);
+    });
+    targetsRow.appendChild(btn);
+  });
+
+}
+
+function showTargetFinish(){
+  const pct = Math.round(tScore/TN*100);
+  let msg;
+  if(tScore===TN) msg = "Excellent tir ! Toutes les cibles touchées. 🏆";
+  else if(tScore >= TN/2) msg = "Bon score ! Encore un effort. 👍";
+  else msg = "Entraîne-toi encore un peu. 💪";
+  targetFinishArea.innerHTML = `
+    <div class="finish-card">
+      <h2>🎯 Partie terminée !</h2>
+      <div class="big-score">${tScore} / ${TN} (${pct}%)</div>
+      <p>${msg}</p>
+      <button id="targetResetBtn">Rejouer 🔄</button>
+    </div>`;
+  document.getElementById("targetResetBtn").addEventListener("click", ()=>{
+    tRemaining = [...Array(TN).keys()];
+    tScore = 0; tAnswered = 0;
+    targetFinishArea.innerHTML = "";
+    targetProgress.textContent = `0 / ${TN} questions faites`;
+    targetScoreEl.textContent = `⭐ Score : 0 / ${TN}`;
+    loadTargetQuestion();
+  });
+}
+loadTargetQuestion();
+
+/* ======================================================
+   JEU 3 — ESCAPE GAME NUMÉRIQUE (Vrai/Faux, contenu
+   encore différent, aligné sur les mêmes nouveaux faits)
+   ====================================================== */
+const escapeItems = [
+  {text:"Le système immunitaire défend spontanément l'organisme contre les microbes, sans qu'on ait besoin d'y penser.", answer:true, digit:"5",
+   explain:"Vrai — c'est une réponse spontanée de l'organisme face aux microbes."},
+  {text:"La réaction inflammatoire agit uniquement contre un seul type de microbe bien précis.", answer:false, digit:"2",
+   explain:"Faux — la réaction inflammatoire est non spécifique : elle agit de la même façon quel que soit le microbe."},
+  {text:"Après la contamination, les microbes peuvent se multiplier dans le corps : c'est ce qu'on appelle l'infection.", answer:true, digit:"8",
+   explain:"Vrai — la multiplication des microbes après leur entrée dans le corps correspond à l'infection."},
+  {text:"La phagocytose est réalisée uniquement par les globules rouges du sang.", answer:false, digit:"4",
+   explain:"Faux — la phagocytose est réalisée par les phagocytes, pas par les globules rouges."}
+];
+const EN = escapeItems.length;
+let eAnswered = 0;
+let eCorrectCount = 0;
+const revealedDigits = new Array(EN).fill(null);
+
+const escapeCard = document.getElementById("escapeCard");
+const codeDigitsEl = document.getElementById("codeDigits");
+const unlockBtn = document.getElementById("unlockBtn");
+const escapeFinishArea = document.getElementById("escapeFinishArea");
+
+function buildEscapeGame(){
+  escapeCard.innerHTML = "";
+  escapeItems.forEach((item, idx)=>{
+    const box = document.createElement("div");
+    box.className = "vf-item";
+    box.innerHTML = `
+      <div class="vf-statement">${idx+1}. ${item.text}</div>
+      <div class="vf-buttons">
+        <button class="vrai" data-val="true">✅ Vrai</button>
+        <button class="faux" data-val="false">❌ Faux</button>
+      </div>
+      <div class="vf-feedback"></div>
+    `;
+    box.querySelectorAll(".vf-buttons button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        if(box.classList.contains("done")) return;
+        const chosen = btn.getAttribute("data-val")==="true";
+        const correct = chosen === item.answer;
+        box.classList.add("done");
+        btn.classList.add("selected");
+        const fb = box.querySelector(".vf-feedback");
+        fb.textContent = (correct? "✅ " : "❌ ") + item.explain;
+        fb.classList.add("show", correct?"correct":"incorrect");
+        beep(correct?880:220, correct?0.18:0.3);
+        eAnswered++;
+        if(correct){
+          eCorrectCount++;
+          revealedDigits[idx] = item.digit;
+          renderCodeDigits();
+        }
+        if(eAnswered===EN){
+          unlockBtn.disabled = eCorrectCount < EN;
+          if(eCorrectCount < EN){
+            const note = document.createElement("p");
+            note.style.color = "var(--rouge)";
+            note.style.fontWeight="700";
+            note.textContent = "Certaines réponses sont incorrectes : le code est incomplet. Relis les explications puis réessaie (recharge la page pour recommencer).";
+            escapeCard.appendChild(note);
+          }
+        }
+      });
+    });
+    escapeCard.appendChild(box);
+  });
+}
+
+function renderCodeDigits(){
+  codeDigitsEl.innerHTML = "";
+  revealedDigits.forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "code-digit" + (d!==null ? " revealed" : "");
+    div.textContent = d!==null ? d : "?";
+    codeDigitsEl.appendChild(div);
+  });
+}
+
+unlockBtn.addEventListener("click", ()=>{
+  beep(1046,0.25);
+  escapeFinishArea.innerHTML = `
+    <div class="finish-card">
+      <h2>🔓 Coffre déverrouillé !</h2>
+      <p>Bravo, tu as reconstitué le code ${revealedDigits.join("")} en répondant correctement aux 4 affirmations.</p>
+    </div>`;
+  unlockBtn.disabled = true;
+});
+
+renderCodeDigits();
+buildEscapeGame();
+</script>
+</body>
+</html>
